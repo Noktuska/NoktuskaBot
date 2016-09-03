@@ -13,7 +13,6 @@ import org.json.JSONObject;
 
 import com.noktuska.bot.noktuskabot_revamped.Main;
 import com.noktuska.bot.noktuskabot_revamped.Reference;
-//import com.noktuska.bot.noktuskabot_revamped.api.HentaiAPI;
 import com.noktuska.bot.noktuskabot_revamped.api.OsuAPI;
 import com.noktuska.bot.noktuskabot_revamped.api.ppcalculator.PpCalculator;
 import com.noktuska.bot.noktuskabot_revamped.structs.Command;
@@ -200,18 +199,6 @@ public class DiscordListener {
 	public void onDisconnect(DiscordDisconnectedEvent event) {
 		main.console.log("Disconnected from discord!");
 		main.console.log("Reason: " + event.getReason().name());
-		if (event.getReason() == Reason.LOGGED_OUT)
-			return;
-		
-		new Thread(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					main.client.login();
-				} catch (DiscordException e) {
-				}
-			}
-		}).start();
 	}
 	
 	private String[] getArgs(String msg) {
@@ -838,7 +825,7 @@ public class DiscordListener {
 				return ("Pong");
 			}
 		});
-		commands.add(new Command("pp") { //TODO: Fix me
+		commands.add(new Command("pp") {
 			@Override
 			public String execute(String[] args, IMessage msg, final Server server) {
 				if (!appliesForRole(server, msg.getAuthor(), Permission.User))
@@ -897,7 +884,7 @@ public class DiscordListener {
 					}
 					result += "```";
 					return result;
-				} else if (args.length == 2) {
+				} else if (args.length == 2 && args[1].equals("done")) {
 					try {
 						int index = Integer.parseInt(args[1]);
 						String tmpCopy = main.todoList.get(index);
@@ -908,7 +895,8 @@ public class DiscordListener {
 						return e.getMessage();
 					}
 				}
-				main.todoList.add(args[0]);
+				String todo = Func.concatArray(args, " ");
+				main.todoList.add(todo);
 				main.save();
 				return ("I added that to the TODO list!");
 			}
@@ -1030,22 +1018,6 @@ public class DiscordListener {
 				for (TwitchStreamer elem : server.streamer) {
 					if (elem.isWasOnline()) {
 						result += elem.getName() + ": <http://www.twitch.tv/" + elem.getName() + ">\n";
-					}
-				}
-				return result;
-			}
-		});
-		commands.add(new Command("getchannels") {
-			@Override
-			public String execute(String[] args, IMessage msg, Server server) {
-				if (!appliesForRole(server, msg.getAuthor(), Permission.Owner))
-					return ("You don't have permission to access this command!");
-				String result = "";
-				for (Server elem : main.servers) {
-					String serverName = main.client.getGuildByID(elem.serverID).getName();
-					for (String channel : elem.channelIds) {
-						String channelName = main.client.getChannelByID(channel).getName();
-						result += serverName + " -> #" + channelName + "\n";
 					}
 				}
 				return result;

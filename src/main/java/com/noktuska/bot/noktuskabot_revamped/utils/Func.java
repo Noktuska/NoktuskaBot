@@ -233,6 +233,18 @@ public class Func {
 		});
 	};
 	
+	public static String concatArray(String[] array, String seperator) {
+		String result = "";
+		
+		for (int i = 0; i < array.length; i++) {
+			if (i != 0)
+				result += seperator;
+			result += array[i];
+		}
+		
+		return result;
+	}
+	
 	public static <T> List<T> arrayToList(T[] array) {
 		List<T> result = new ArrayList<T>();
 		for (T elem : array) {

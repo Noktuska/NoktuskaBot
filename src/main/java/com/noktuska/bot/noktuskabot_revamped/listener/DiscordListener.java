@@ -18,8 +18,8 @@ import com.noktuska.bot.noktuskabot_revamped.api.ppcalculator.PpCalculator;
 import com.noktuska.bot.noktuskabot_revamped.structs.Command;
 import com.noktuska.bot.noktuskabot_revamped.structs.OsuPlayer;
 import com.noktuska.bot.noktuskabot_revamped.structs.Permission;
-import com.noktuska.bot.noktuskabot_revamped.structs.Request;
 import com.noktuska.bot.noktuskabot_revamped.structs.Quote;
+import com.noktuska.bot.noktuskabot_revamped.structs.Request;
 import com.noktuska.bot.noktuskabot_revamped.structs.Server;
 import com.noktuska.bot.noktuskabot_revamped.structs.TwitchStreamer;
 import com.noktuska.bot.noktuskabot_revamped.structs.beatmap.Beatmap;
@@ -29,7 +29,6 @@ import com.noktuska.bot.noktuskabot_revamped.utils.Func;
 
 import sx.blah.discord.api.events.EventSubscriber;
 import sx.blah.discord.handle.impl.events.DiscordDisconnectedEvent;
-import sx.blah.discord.handle.impl.events.DiscordDisconnectedEvent.Reason;
 import sx.blah.discord.handle.impl.events.MentionEvent;
 //import sx.blah.discord.handle.impl.events.MessageDeleteEvent;
 import sx.blah.discord.handle.impl.events.MessageReceivedEvent;

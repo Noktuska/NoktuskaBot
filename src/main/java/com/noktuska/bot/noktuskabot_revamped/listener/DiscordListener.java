@@ -29,6 +29,7 @@ import com.noktuska.bot.noktuskabot_revamped.utils.Func;
 
 import sx.blah.discord.api.events.EventSubscriber;
 import sx.blah.discord.handle.impl.events.DiscordDisconnectedEvent;
+import sx.blah.discord.handle.impl.events.GuildLeaveEvent;
 import sx.blah.discord.handle.impl.events.MentionEvent;
 //import sx.blah.discord.handle.impl.events.MessageDeleteEvent;
 import sx.blah.discord.handle.impl.events.MessageReceivedEvent;
@@ -100,6 +101,18 @@ public class DiscordListener {
 		}
 		
 		main.console.log("Discord listener ready!");
+	}
+	
+	@EventSubscriber
+	public void onGuildLeave(GuildLeaveEvent event) {
+		main.console.log("Left guild: " + event.getGuild().getID());
+		
+		for (Server elem : main.servers) {
+			if (elem.serverID.equals(event.getGuild().getID())) {
+				main.servers.remove(elem);
+				break;
+			}
+		}
 	}
 	
 	@EventSubscriber

@@ -35,6 +35,7 @@ import sx.blah.discord.handle.impl.events.MentionEvent;
 import sx.blah.discord.handle.impl.events.MessageReceivedEvent;
 import sx.blah.discord.handle.impl.events.ReadyEvent;
 import sx.blah.discord.handle.obj.IChannel;
+import sx.blah.discord.handle.obj.IGuild;
 import sx.blah.discord.handle.obj.IMessage;
 //import sx.blah.discord.handle.obj.IMessage.Attachment;
 import sx.blah.discord.handle.obj.IUser;
@@ -1033,6 +1034,25 @@ public class DiscordListener {
 					}
 				}
 				return result;
+			}
+		});
+		
+		commands.add(new Command("sendall") {
+			@Override
+			public String execute(String[] args, IMessage msg, Server server) {
+				if (!appliesForRole(server, msg.getAuthor(), Permission.User))
+					return "";
+				for (IGuild elem : main.client.getGuilds()) {
+					for (IChannel channel : elem.getChannels()) {
+						try {
+							channel.sendMessage(args[0]);
+							break;
+						} catch (RateLimitException | MissingPermissionsException | DiscordException e) {
+							e.printStackTrace();
+						}
+					}
+				}
+				return "";
 			}
 		});
 	}

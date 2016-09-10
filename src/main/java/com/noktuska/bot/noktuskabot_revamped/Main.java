@@ -10,6 +10,7 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.noktuska.bot.noktuskabot_revamped.inofficial.Inofficial;
 import com.noktuska.bot.noktuskabot_revamped.listener.DiscordListener;
 import com.noktuska.bot.noktuskabot_revamped.listener.OsuTwitchListener;
 import com.noktuska.bot.noktuskabot_revamped.rmi.RmiServer;
@@ -53,6 +54,9 @@ public class Main {
 	
 	public Main() {
 		console.log("Starting NOKTUSKABOT...");
+		console.log("Initialize inofficial functions");
+		Inofficial.init(this);
+		
 		console.log("Trying to read savefile...");
 		readSaveFile();
 		

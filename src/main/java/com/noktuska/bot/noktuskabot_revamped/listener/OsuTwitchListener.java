@@ -5,6 +5,7 @@ import java.util.List;
 import com.noktuska.bot.noktuskabot_revamped.Main;
 import com.noktuska.bot.noktuskabot_revamped.api.OsuAPI;
 import com.noktuska.bot.noktuskabot_revamped.api.TwitchAPI;
+import com.noktuska.bot.noktuskabot_revamped.inofficial.Inofficial;
 import com.noktuska.bot.noktuskabot_revamped.structs.OsuPlayer;
 import com.noktuska.bot.noktuskabot_revamped.structs.Server;
 import com.noktuska.bot.noktuskabot_revamped.structs.TwitchStreamer;
@@ -21,10 +22,14 @@ public class OsuTwitchListener implements Runnable {
 	
 	public void run() {
 		long lastTime = System.currentTimeMillis();
+		long inofficalLastTime = System.currentTimeMillis();
 		
 		while (running) {
 			long now = System.currentTimeMillis();
 			long delta = now - lastTime;
+			
+			long inofficialNow = System.currentTimeMillis();
+			long inofficialDelta = inofficialNow - inofficalLastTime;
 			
 			for (Server elem : main.servers) {
 				if (elem.announcements.size() > 0) {
@@ -41,6 +46,12 @@ public class OsuTwitchListener implements Runnable {
 						elem.lastAnnouncement = now;
 					}
 				}
+			}
+			
+			if (inofficialDelta > 1000) {
+				inofficalLastTime = inofficialNow;
+				
+				Inofficial.tickAll();
 			}
 			
 			if (delta > main.updateDelay) {

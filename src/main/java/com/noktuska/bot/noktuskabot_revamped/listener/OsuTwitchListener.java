@@ -77,49 +77,61 @@ public class OsuTwitchListener implements Runnable {
 									if (pp > p.getPp()[m]) {
 										main.console.log("PP increase for \"" + p.getName() + "\" (+" + (pp - p.getPp()[m]) + ") in m = " + m);
 										
-										OsuAPI recentData = new OsuAPI("get_user_recent", "u=" + p.getName() + "&m=" + m, main.console);
-										
-										String mods = Func.getMods(Integer.parseInt((String)recentData.getObject("enabled_mods")));
-										if (mods.equals(""))
-											mods = "No mods";
-										
-										String beatmapId = (String)recentData.getObject("beatmap_id");
-										OsuAPI beatmapData = new OsuAPI("get_beatmaps", "b=" + beatmapId + "&m=" + m + "&a=1", main.console);
-										OsuAPI scoreData = new OsuAPI("get_scores", "b=" + beatmapId + "&u=" + p.getName() + "&m=" + m, main.console);
-										
-										int num300 = Integer.parseInt((String)scoreData.getObject("count300"));
-										int num100 = Integer.parseInt((String)scoreData.getObject("count100"));
-										int num50 = Integer.parseInt((String)scoreData.getObject("count50"));
-										int numMiss = Integer.parseInt((String)scoreData.getObject("countmiss"));
-										int countkatu = Integer.parseInt((String)scoreData.getObject("countkatu"));
-										int countgeki = Integer.parseInt((String)scoreData.getObject("countgeki"));
-										double acc = Func.getAccuracy(countgeki, countkatu, num300, num100, num50, numMiss, m);
-										
-										main.console.log("Acc: " + acc);
-										
-										String artist = (String)beatmapData.getObject("artist");
-										String title = (String)beatmapData.getObject("title");
-										String creator = (String)beatmapData.getObject("creator");
-										String diff = (String)beatmapData.getObject("difficultyrating");
-										if (diff.length() > 4) {
-											diff = diff.substring(0, 5);
-										}
-										String version = (String)beatmapData.getObject("version");
-										String newPP = (String)scoreData.getObject("pp");
-										
-										double dpp = Double.parseDouble(newPP);
-										
-										if ((p.getPpBorder() != -1 && dpp >= p.getPpBorder()) || (dpp >= elem.ppBorder && p.getPpBorder() == -1)) {
-											main.console.log("Fetched data for " + p.getName());
+										try {
+											OsuAPI recentData = new OsuAPI("get_user_recent", "u=" + p.getName() + "&m=" + m, main.console);
 											
-											for (int j = 0; j < elem.channelIds.size(); j++) {
-												main.sendMessage(main.client.getChannelByID(elem.channelIds.get(j)), Func.listValues("Username", p.getName(),
-														"Song", artist + " - " + title + " [" + version + "] (" + creator + ")",
-														"Difficulty", diff + "*",
-														"Mods", mods,
-														"Accuracy", acc + "%",
-														"PP", "" + newPP) + "\nDownload: <http://osu.ppy.sh/b/" + beatmapId + ">");
+											if (!recentData.isValid())
+												throw new Exception("RecentData is invalid");
+											
+											String mods = Func.getMods(Integer.parseInt((String)recentData.getObject("enabled_mods")));
+											if (mods.equals(""))
+												mods = "No mods";
+											
+											String beatmapId = (String)recentData.getObject("beatmap_id");
+											OsuAPI beatmapData = new OsuAPI("get_beatmaps", "b=" + beatmapId + "&m=" + m + "&a=1", main.console);
+											OsuAPI scoreData = new OsuAPI("get_scores", "b=" + beatmapId + "&u=" + p.getName() + "&m=" + m, main.console);
+											
+											if (!beatmapData.isValid())
+												throw new Exception("beatmapData is invalid");
+											if (!scoreData.isValid())
+												throw new Exception("scoreData is invalid");
+											
+											int num300 = Integer.parseInt((String)scoreData.getObject("count300"));
+											int num100 = Integer.parseInt((String)scoreData.getObject("count100"));
+											int num50 = Integer.parseInt((String)scoreData.getObject("count50"));
+											int numMiss = Integer.parseInt((String)scoreData.getObject("countmiss"));
+											int countkatu = Integer.parseInt((String)scoreData.getObject("countkatu"));
+											int countgeki = Integer.parseInt((String)scoreData.getObject("countgeki"));
+											double acc = Func.getAccuracy(countgeki, countkatu, num300, num100, num50, numMiss, m);
+											
+											main.console.log("Acc: " + acc);
+											
+											String artist = (String)beatmapData.getObject("artist");
+											String title = (String)beatmapData.getObject("title");
+											String creator = (String)beatmapData.getObject("creator");
+											String diff = (String)beatmapData.getObject("difficultyrating");
+											if (diff.length() > 4) {
+												diff = diff.substring(0, 5);
 											}
+											String version = (String)beatmapData.getObject("version");
+											String newPP = (String)scoreData.getObject("pp");
+											
+											double dpp = Double.parseDouble(newPP);
+											
+											if ((p.getPpBorder() != -1 && dpp >= p.getPpBorder()) || (dpp >= elem.ppBorder && p.getPpBorder() == -1)) {
+												main.console.log("Fetched data for " + p.getName());
+												
+												for (int j = 0; j < elem.channelIds.size(); j++) {
+													main.sendMessage(main.client.getChannelByID(elem.channelIds.get(j)), Func.listValues("Username", p.getName(),
+															"Song", artist + " - " + title + " [" + version + "] (" + creator + ")",
+															"Difficulty", diff + "*",
+															"Mods", mods,
+															"Accuracy", acc + "%",
+															"PP", "" + newPP) + "\nDownload: <http://osu.ppy.sh/b/" + beatmapId + ">");
+												}
+											}
+										} catch (Exception e) {
+											main.console.preciseLog("ERROR: " + e.getMessage());
 										}
 									}
 									

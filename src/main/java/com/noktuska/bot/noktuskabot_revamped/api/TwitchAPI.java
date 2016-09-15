@@ -7,17 +7,25 @@ import com.noktuska.bot.noktuskabot_revamped.utils.Func;
 
 public class TwitchAPI {
 
-	private JSONObject data;
+	private JSONObject data = null;
 	
 	public TwitchAPI(String username, Console logger) {
 		String tmpData = "";
 		
 		tmpData = Func.readUrl("https://api.twitch.tv/kraken/streams/" + username, null);
 		
-		if (tmpData.equals("") || tmpData.length() < 10)
+		if (tmpData.equals("") || tmpData.length() < 10) {
 			logger.log("WARN: " + username + " returned unsuccessful!");
+			return;
+		}
 		
 		data = new JSONObject(tmpData);
+	}
+	
+	public boolean isValid() {
+		if (data == null)
+			return false;
+		return (!data.equals(JSONObject.NULL));
 	}
 	
 	public int getStreamerStatus() {

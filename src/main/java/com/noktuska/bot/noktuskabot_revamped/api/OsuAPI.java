@@ -20,8 +20,10 @@ public class OsuAPI {
 		
 		tmpData = Func.readUrl("https://osu.ppy.sh/api/" + type + "?k=" + Reference.OSU_API_KEY + "&" + keys, logger);
 		
-		if (tmpData.equals("") || tmpData.length() < 10)
+		if (tmpData.equals("") || tmpData.length() < 10) {
 			logger.log("WARN: " + type + " : " + keys + " returned unsuccessful!");
+			return;
+		}
 		
 		array = new JSONArray(tmpData);
 		
@@ -30,6 +32,8 @@ public class OsuAPI {
 	}
 	
 	public boolean isValid() {
+		if (data == null)
+			return false;
 		return (!data.equals(JSONObject.NULL));
 	}
 	

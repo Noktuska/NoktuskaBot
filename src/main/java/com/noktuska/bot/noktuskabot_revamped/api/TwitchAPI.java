@@ -3,6 +3,7 @@ package com.noktuska.bot.noktuskabot_revamped.api;
 import org.json.JSONObject;
 
 import com.noktuska.bot.noktuskabot_revamped.Console;
+import com.noktuska.bot.noktuskabot_revamped.Reference;
 import com.noktuska.bot.noktuskabot_revamped.utils.Func;
 
 public class TwitchAPI {
@@ -12,7 +13,7 @@ public class TwitchAPI {
 	public TwitchAPI(String username, Console logger) {
 		String tmpData = "";
 		
-		tmpData = Func.readUrl("https://api.twitch.tv/kraken/streams/" + username, null);
+		tmpData = Func.readUrl("https://api.twitch.tv/kraken/streams/" + username + "?client_id=" + Reference.TWITCH_CLIENT_ID, null);
 		
 		if (tmpData.equals("") || tmpData.length() < 10) {
 			logger.log("WARN: " + username + " returned unsuccessful!");

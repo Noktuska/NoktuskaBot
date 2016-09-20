@@ -142,6 +142,9 @@ public class DiscordListener {
 					if (reply != null && !reply.equals(""))
 						main.sendMessage(channel, reply);
 				} catch (Exception e) {
+					for (StackTraceElement error : e.getStackTrace()) {
+						main.console.log(error.toString());
+					}
 					main.sendMessage(channel, "Are you trying to crash me? Some evil invalid data came out of that request!");
 				}
 				break;
@@ -470,13 +473,13 @@ public class DiscordListener {
 						boolean warn = false;
 						for (int i = 0; i < 4; i++) {
 							OsuAPI userData = new OsuAPI("get_user", "u=" + args[1] + "&m=" + i, null);
-							if (!userData.isValid()) {
+							if (!userData.isValid() || userData.getObject("pp_raw") == null) {
 								if (args[0].equals("addf")) {
 									warn = true;
 									pp[i] = 0;
 									continue;
 								} else {
-									return ("Couldn't get any data from that user!");
+									return ("Either that user doesn't exist or he hasn't played some modes, try using addf instead of add if you think that user is fine!");
 								}
 							}
 							pp[i] = Double.parseDouble((String)userData.getObject("pp_raw"));

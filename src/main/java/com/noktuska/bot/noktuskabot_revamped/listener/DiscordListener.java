@@ -981,30 +981,6 @@ public class DiscordListener {
 				return ("Arguments could not be interpreted or there is an invalid number of them!");
 			}
 		});
-		commands.add(new Command("announcement") {
-			@Override
-			public String execute(String[] args, IMessage msg, Server server) {
-				if (!appliesForRole(server, msg.getAuthor(), Permission.Admin))
-					return ("You don't have permission to access this command!");
-				if (args.length != 2)
-					return ("Invalid number of arguments!");
-				if (args[0].toLowerCase().equals("add")) {
-					server.announcements.add(args[1]);
-					main.save();
-					return ("Announcement added!");
-				} else if (args[0].toLowerCase().equals("remove")) {
-					for (String elem : server.announcements) {
-						if (elem.toLowerCase().contains(args[1].toLowerCase())) {
-							server.announcements.remove(elem);
-							main.save();
-							return ("Announcement: `" + elem + "` got removed!");
-						}
-					}
-					return ("No announcement contained that line...");
-				}
-				return ("Arguments could not be interpreted or there is an invalid number of them!");
-			}
-		});
 		commands.add(new Command("status") {
 			@Override
 			public String execute(String[] args, IMessage msg, Server server) {
@@ -1043,7 +1019,7 @@ public class DiscordListener {
 		commands.add(new Command("sendall") {
 			@Override
 			public String execute(String[] args, IMessage msg, Server server) {
-				if (!appliesForRole(server, msg.getAuthor(), Permission.User))
+				if (!appliesForRole(server, msg.getAuthor(), Permission.Owner))
 					return "";
 				for (IGuild elem : main.client.getGuilds()) {
 					for (IChannel channel : elem.getChannels()) {
@@ -1056,6 +1032,21 @@ public class DiscordListener {
 					}
 				}
 				return "";
+			}
+		});
+		commands.add(new Command("toggle") {
+			@Override
+			public String execute(String[] args, IMessage msg, Server server) {
+				if (!appliesForRole(server, msg.getAuthor(), Permission.Owner))
+					return "You don't have permissions to access this command";
+				if (args[0].toLowerCase().equals("osu")) {
+					main.osuListener ^= true;
+					return "OsuListener set to " + main.osuListener;
+				} else if (args[0].toLowerCase().equals("twitch")) {
+					main.twitchListener ^= true;
+					return "TwitchListener set to " + main.twitchListener;
+				}
+				return "Arguments could not be interpreted!";
 			}
 		});
 	}

@@ -52,6 +52,9 @@ public class Main {
 	
 	public boolean newUpdate = false;
 	
+	public boolean osuListener = true;
+	public boolean twitchListener = true;
+	
 	public Main() {
 		console.log("Starting NOKTUSKABOT...");
 		console.log("Initialize inofficial functions");

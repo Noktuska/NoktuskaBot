@@ -15,7 +15,7 @@ public class TwitchAPI {
 		
 		tmpData = Func.readUrl("https://api.twitch.tv/kraken/streams/" + username + "?client_id=" + Reference.TWITCH_CLIENT_ID, null);
 		
-		if (tmpData.equals("") || tmpData.length() < 10) {
+		if (tmpData == null || tmpData.equals("") || tmpData.length() < 10) {
 			logger.log("WARN: " + username + " returned unsuccessful!");
 			return;
 		}

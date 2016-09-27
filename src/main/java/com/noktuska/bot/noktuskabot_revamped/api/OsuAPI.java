@@ -20,7 +20,7 @@ public class OsuAPI {
 		
 		tmpData = Func.readUrl("https://osu.ppy.sh/api/" + type + "?k=" + Reference.OSU_API_KEY + "&" + keys, logger);
 		
-		if (tmpData.equals("") || tmpData.length() < 10) {
+		if (tmpData == null || tmpData.equals("") || tmpData.length() < 10) {
 			logger.log("WARN: " + type + " : " + keys + " returned unsuccessful!");
 			return;
 		}

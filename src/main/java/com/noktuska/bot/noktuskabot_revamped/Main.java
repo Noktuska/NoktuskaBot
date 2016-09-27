@@ -52,8 +52,8 @@ public class Main {
 	
 	public boolean newUpdate = false;
 	
-	public boolean osuListener = true;
-	public boolean twitchListener = true;
+	public volatile boolean osuListener = true;
+	public volatile boolean twitchListener = true;
 	
 	public Main() {
 		console.log("Starting NOKTUSKABOT...");

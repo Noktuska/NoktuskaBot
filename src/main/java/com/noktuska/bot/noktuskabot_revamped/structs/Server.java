@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.noktuska.bot.noktuskabot_revamped.Main;
+import com.noktuska.bot.noktuskabot_revamped.Reference;
 import com.noktuska.bot.noktuskabot_revamped.api.BeatmapList;
 import com.noktuska.bot.noktuskabot_revamped.api.OsuAPI;
 import com.noktuska.bot.noktuskabot_revamped.api.OsuBeatmapDownloader;
@@ -86,6 +87,16 @@ public class Server {
 		} else {
 			main.console.log("WARNING: Undefined section: " + curSection);
 		}
+	}
+	
+	public Permission getPermissionFor(String user) {
+		if (user.equals(Reference.OWNER_ID))
+			return Permission.Owner;
+		if (admins.contains(user))
+			return Permission.Admin;
+		if (banned.contains(user))
+			return Permission.Banned;
+		return Permission.User;
 	}
 
 }

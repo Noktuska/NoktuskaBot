@@ -14,7 +14,6 @@ import org.json.JSONObject;
 import com.noktuska.bot.noktuskabot_revamped.Main;
 import com.noktuska.bot.noktuskabot_revamped.Reference;
 import com.noktuska.bot.noktuskabot_revamped.api.OsuAPI;
-import com.noktuska.bot.noktuskabot_revamped.api.ppcalculator.PpCalculator;
 import com.noktuska.bot.noktuskabot_revamped.structs.Command;
 import com.noktuska.bot.noktuskabot_revamped.structs.OsuPlayer;
 import com.noktuska.bot.noktuskabot_revamped.structs.Permission;
@@ -22,7 +21,6 @@ import com.noktuska.bot.noktuskabot_revamped.structs.Quote;
 import com.noktuska.bot.noktuskabot_revamped.structs.Request;
 import com.noktuska.bot.noktuskabot_revamped.structs.Server;
 import com.noktuska.bot.noktuskabot_revamped.structs.TwitchStreamer;
-import com.noktuska.bot.noktuskabot_revamped.structs.beatmap.Beatmap;
 import com.noktuska.bot.noktuskabot_revamped.structs.polls.Poll;
 import com.noktuska.bot.noktuskabot_revamped.structs.polls.PollAnswer;
 import com.noktuska.bot.noktuskabot_revamped.utils.Func;
@@ -35,7 +33,6 @@ import sx.blah.discord.handle.impl.events.MentionEvent;
 import sx.blah.discord.handle.impl.events.MessageReceivedEvent;
 import sx.blah.discord.handle.impl.events.ReadyEvent;
 import sx.blah.discord.handle.obj.IChannel;
-import sx.blah.discord.handle.obj.IGuild;
 import sx.blah.discord.handle.obj.IMessage;
 //import sx.blah.discord.handle.obj.IMessage.Attachment;
 import sx.blah.discord.handle.obj.IUser;
@@ -120,6 +117,7 @@ public class DiscordListener {
 	public void onMentionEvent(MentionEvent event) {
 		IMessage msg = event.getMessage();
 		IChannel channel = msg.getChannel();
+		IUser author = msg.getAuthor();
 		String content = msg.getContent();
 		
 		Server server = main.getServer(msg.getGuild().getID());
@@ -135,7 +133,7 @@ public class DiscordListener {
 		String[] uargs = getArgs(cmd);
 		
 		for (Command elem : commands) {
-			if (cmd.toLowerCase().startsWith(elem.key)) {
+			if (cmd.toLowerCase().startsWith(elem.key) && elem.isPermission(author, server)) {
 				main.console.log("Command found: " + elem.key);
 				try {
 					String reply = elem.execute(uargs, msg, server);
@@ -273,13 +271,11 @@ public class DiscordListener {
 	}
 	
 	private void createCommands() {
-		commands.add(new Command("stats") {
+		commands.add(new Command("stats", Permission.User) {
 			@Override
 			public String execute(String[] args, IMessage msg, Server server) {
 				if (args.length != 2)
 					return ("Invalid number of arguments!");
-				if (!appliesForRole(server, msg.getAuthor(), Permission.User))
-					return ("Noktuska told me to not listen to you :c");
 				
 				OsuAPI stats = new OsuAPI("get_user", "u=" + args[0] + "&m=" + getMode(args[1]), null);
 				
@@ -299,13 +295,11 @@ public class DiscordListener {
 				return result;
 			}
 		});
-		commands.add(new Command("best") {
+		commands.add(new Command("best", Permission.User) {
 			@Override
 			public String execute(String[] args, IMessage msg, Server server) {
 				if (args.length != 2)
 					return ("Invalid number of arguments!");
-				if (!appliesForRole(server, msg.getAuthor(), Permission.User))
-					return ("Noktuska told me to not listen to you :c");
 				
 				OsuAPI userBest = new OsuAPI("get_user_best", "u=" + args[0] + "&m=" + getMode(args[1]), null);
 				
@@ -358,11 +352,9 @@ public class DiscordListener {
 				return result;
 			}
 		});
-		commands.add(new Command("recent") {
+		commands.add(new Command("recent", Permission.User) {
 			@Override
 			public String execute(String[] args, IMessage msg, Server server) {
-				if (!appliesForRole(server, msg.getAuthor(), Permission.User))
-					return ("You have no permission to access this command!");
 				if (args.length != 2)
 					return ("Invalid number of arguments!");
 				
@@ -418,11 +410,9 @@ public class DiscordListener {
 						"PP", pp);
 			}
 		});
-		commands.add(new Command("roll") {
+		commands.add(new Command("roll", Permission.User) {
 			@Override
 			public String execute(String[] args, IMessage msg, Server server) {
-				if (!appliesForRole(server, msg.getAuthor(), Permission.User))
-					return ("Noktuska told me to not listen to you :c");
 				Random r = new Random();
 				if (args.length == 0) {
 					int val = r.nextInt(100) + 1;
@@ -438,11 +428,9 @@ public class DiscordListener {
 					return ("Invalid number of arguments!");
 			}
 		});
-		commands.add(new Command("list") {
+		commands.add(new Command("list", Permission.User) {
 			@Override
 			public String execute(String[] args, IMessage msg, Server server) {
-				if (!appliesForRole(server, msg.getAuthor(), Permission.User))
-					return ("Noktuska told me to not listen to you :c");
 				if (args.length == 0) {
 					String result = "```fix\n[OSU]\n";
 					String spaces = "               ";
@@ -522,13 +510,11 @@ public class DiscordListener {
 				}
 			}
 		});
-		commands.add(new Command("setborder") {
+		commands.add(new Command("setborder", Permission.User) {
 			@Override
 			public String execute(String[] args, IMessage msg, Server server) {
 				if (args.length != 1 && args.length != 2)
 					return ("Invalid number of arguments");
-				if (!appliesForRole(server, msg.getAuthor(), Permission.User))
-					return ("Noktuska told me to not listen to you :c");
 				try {
 					if (args.length == 1) {
 						server.ppBorder = Integer.parseInt(args[0]);
@@ -548,17 +534,15 @@ public class DiscordListener {
 				return (args[0] + " is not a valid number...");
 			}
 		});
-		commands.add(new Command("command") {
+		commands.add(new Command("command", Permission.User) {
 			@Override
 			public String execute(String[] args, IMessage msg, Server server) {
 				return ("If the link expires for some reason, blame Noktuska and not me: http://pastebin.com/cJQpD8hp");
 			}
 		});
-		commands.add(new Command("quote") {
+		commands.add(new Command("quote", Permission.User) {
 			@Override
 			public String execute(String[] args, IMessage msg, Server server) {
-				if (!appliesForRole(server, msg.getAuthor(), Permission.User))
-					return ("Noktuska told me to not listen to you :c");
 				if (args.length == 1) {
 					for (Quote q : server.quotes) {
 						if (q.getKeyword().toLowerCase().equals(args[0].toLowerCase())) {
@@ -605,22 +589,18 @@ public class DiscordListener {
 				return ("Arguments could not be interpreted or there is an invalid number of them!");
 			}
 		});
-		commands.add(new Command("join") {
+		commands.add(new Command("join", Permission.User) {
 			@Override
 			public String execute(String[] args, IMessage msg, Server server) {
-				if (!appliesForRole(server, msg.getAuthor(), Permission.User))
-					return ("You have no permission to access this command!");
 				if (msg.getAuthor().getConnectedVoiceChannels().size() == 0)
 					return ("You are in no voice channel I could join!");
 				main.voiceHandler.switchVoiceChannel(msg.getAuthor().getConnectedVoiceChannels().get(0));
 				return null;
 			}
 		});
-		commands.add(new Command("leave") {
+		commands.add(new Command("leave", Permission.User) {
 			@Override
 			public String execute(String[] args, IMessage msg, Server server) {
-				if (!appliesForRole(server, msg.getAuthor(), Permission.User))
-					return ("You have no permission to access this command!");
 				if (main.client.getOurUser().getConnectedVoiceChannels().size() > 0)
 					main.voiceHandler.switchVoiceChannel(null);
 				else
@@ -628,7 +608,7 @@ public class DiscordListener {
 				return null;
 			}
 		});
-		commands.add(new Command("queue") {
+		commands.add(new Command("queue", Permission.User) {
 			@Override
 			public String execute(String[] args, IMessage msg, Server server) {
 				return ("Currently I'm not able to play songs. I'm sorry!");
@@ -680,11 +660,9 @@ public class DiscordListener {
 				return null;
 			}
 		});*/
-		commands.add(new Command("mute") {
+		commands.add(new Command("mute", Permission.Admin) {
 			@Override
 			public String execute(String[] args, IMessage msg, Server server) {
-				if (!appliesForRole(server, msg.getAuthor(), Permission.Admin))
-					return ("You have no permission to access this command!");
 				if (args.length != 1)
 					return ("Invalid number of arguments!");
 				for (IUser u : msg.getGuild().getUsers()) {
@@ -701,11 +679,9 @@ public class DiscordListener {
 				return ("User with the name \"" + args[0] + "\" could not be found.");
 			}
 		});
-		commands.add(new Command("unmute") {
+		commands.add(new Command("unmute", Permission.Admin) {
 			@Override
 			public String execute(String[] args, IMessage msg, Server server) {
-				if (!appliesForRole(server, msg.getAuthor(), Permission.Admin))
-					return ("You have no permission to access this command!");
 				if (args.length != 1)
 					return ("Invalid number of arguments!");
 				for (IUser u : msg.getGuild().getUsers()) {
@@ -722,11 +698,9 @@ public class DiscordListener {
 				return ("User with the name \"" + args[0] + "\" could not be found!");
 			}
 		});
-		commands.add(new Command("setrights") {
+		commands.add(new Command("setrights", Permission.Admin) {
 			@Override
 			public String execute(String[] args, IMessage msg, Server server) {
-				if (!appliesForRole(server, msg.getAuthor(), Permission.Admin))
-					return ("You have no permission to access this command!");
 				if (args.length != 2)
 					return ("Invalid number of arguments!");
 				IUser user = null;
@@ -772,14 +746,12 @@ public class DiscordListener {
 				return null;
 			}
 		});
-		commands.add(new Command("poll") {
+		commands.add(new Command("poll", Permission.User) {
 			@Override
 			public String execute(String[] args, IMessage msg, Server server) {
 				if (args.length == 0) {
 					return (server.currentPoll == null ? "There is currently no poll!" : server.currentPoll.toString());
 				} else if (args[0].equals("create")) {
-					if (!appliesForRole(server, msg.getAuthor(), Permission.Admin))
-						return ("You have no permission to access this command!");
 					if (args.length < 4)
 						return ("Invalid number of arguments!");
 					if (server.currentPoll != null)
@@ -791,8 +763,6 @@ public class DiscordListener {
 					server.currentPoll = new Poll(args[1], answers);
 					return (server.currentPoll.toString());
 				} else if (args[0].equals("vote")) {
-					if (!appliesForRole(server, msg.getAuthor(), Permission.User))
-						return ("You have no permission to access this command!");
 					if (args.length < 2)
 						return ("Invalid number of arguments!");
 					if (server.currentPoll == null)
@@ -804,15 +774,11 @@ public class DiscordListener {
 					}
 					return (msg.getAuthor().getName() + " voted for answer " + args[1]);
 				} else if (args[0].equals("close")) {
-					if (!appliesForRole(server, msg.getAuthor(), Permission.Admin))
-						return ("You have no permission to access this command!");
 					if (server.currentPoll == null)
 						return ("There is no poll running!");
 					server.currentPoll = null;
 					return ("Poll closed!");
 				} else if (args[0].equals("result")) {
-					if (!appliesForRole(server, msg.getAuthor(), Permission.Admin))
-						return ("You have no permission to access this command!");
 					if (server.currentPoll == null)
 						return ("There is no poll running!");
 					boolean close = true;
@@ -835,18 +801,17 @@ public class DiscordListener {
 				return ("Arguments could not be interpreted or there is an invalid number of them!");
 			}
 		});
-		commands.add(new Command("ping") {
+		commands.add(new Command("ping", Permission.User) {
 			@Override
 			public String execute(String[] args, IMessage msg, Server server) {
 				return ("Pong");
 			}
 		});
-		commands.add(new Command("pp") {
+		commands.add(new Command("pp", Permission.User) {
 			@Override
 			public String execute(String[] args, IMessage msg, final Server server) {
-				if (!appliesForRole(server, msg.getAuthor(), Permission.User))
-					return ("You have no permission to access this command!");
-				if (args.length < 1)
+				return ("I'm getting a rework on this part, currently under construction!");
+				/*if (args.length < 1)
 					return ("Invalid number of arguments!");
 				final String[] argsCopy = args.clone();
 				final IChannel channelCopy = msg.getChannel().copy();
@@ -873,10 +838,10 @@ public class DiscordListener {
 							main.sendMessage(channelCopy, "Something weird happen. But I don't know what...");
 					}
 				}).start();
-				return null;
+				return null;*/
 			}
 		});
-		commands.add(new Command("progress") {
+		commands.add(new Command("progress", Permission.User) {
 			@Override
 			public String execute(String[] args, IMessage msg, Server server) {
 				if (!server.isDownloading)
@@ -888,11 +853,9 @@ public class DiscordListener {
 				return (result);
 			}
 		});
-		commands.add(new Command("todo") {
+		commands.add(new Command("todo", Permission.Owner) {
 			@Override
 			public String execute(String[] args, IMessage msg, Server server) {
-				if (!appliesForRole(server, msg.getAuthor(), Permission.Owner))
-					return ("You don't have permission to access this command!");
 				if (args.length == 0) {
 					String result = "```\n";
 					for (int i = 0; i < main.todoList.size(); i++) {
@@ -917,7 +880,7 @@ public class DiscordListener {
 				return ("I added that to the TODO list!");
 			}
 		});
-		commands.add(new Command("request") {
+		commands.add(new Command("request", Permission.User) {
 			@Override
 			public String execute(String[] args, IMessage msg, Server server) {
 				if (args.length == 0) {
@@ -931,8 +894,6 @@ public class DiscordListener {
 					return result;
 				} else if (args.length == 2) {
 					if (args[0].toLowerCase().equals("request")) {
-						if (!appliesForRole(server, msg.getAuthor(), Permission.User))
-							return ("You don't have permission to access this command!");
 						main.requests.add(new Request(args[1], msg.getAuthor(), main.requests.size(), main));
 						IChannel adminChannel = main.client.getChannelByID(main.adminChannel);
 						if (adminChannel != null)
@@ -981,19 +942,15 @@ public class DiscordListener {
 				return ("Arguments could not be interpreted or there is an invalid number of them!");
 			}
 		});
-		commands.add(new Command("status") {
+		commands.add(new Command("status", Permission.User) {
 			@Override
 			public String execute(String[] args, IMessage msg, Server server) {
-				if (!appliesForRole(server, msg.getAuthor(), Permission.User))
-					return ("You don't have permission to access this command!");
 				return Func.listValues("OsuTwitchThread", main.osuTwitchThread.isAlive() ? "Running" : "Offline");
 			}
 		});
-		commands.add(new Command("restart") {
+		commands.add(new Command("restart", Permission.Owner) {
 			@Override
 			public String execute(String[] args, IMessage msg, Server server) {
-				if (!appliesForRole(server, msg.getAuthor(), Permission.Owner))
-					return ("You don't have permission to access this command!");
 				if (main.osuTwitchThread.isAlive())
 					return ("OsuTwitchThread is still running!");
 				main.osuTwitchThread = new Thread(new OsuTwitchListener(main));
@@ -1001,11 +958,9 @@ public class DiscordListener {
 				return ("OsuTwitchThread restarted successfully!");
 			}
 		});
-		commands.add(new Command("whoislive") {
+		commands.add(new Command("whoislive", Permission.User) {
 			@Override
 			public String execute(String[] args, IMessage msg, Server server) {
-				if (!appliesForRole(server, msg.getAuthor(), Permission.User))
-					return ("You don't have permission to access this command!");
 				String result = "";
 				for (TwitchStreamer elem : server.streamer) {
 					if (elem.isWasOnline()) {
@@ -1015,30 +970,9 @@ public class DiscordListener {
 				return result;
 			}
 		});
-		
-		commands.add(new Command("sendall") {
+		commands.add(new Command("toggle", Permission.Owner) {
 			@Override
 			public String execute(String[] args, IMessage msg, Server server) {
-				if (!appliesForRole(server, msg.getAuthor(), Permission.Owner))
-					return "";
-				for (IGuild elem : main.client.getGuilds()) {
-					for (IChannel channel : elem.getChannels()) {
-						try {
-							channel.sendMessage(args[0]);
-							break;
-						} catch (RateLimitException | MissingPermissionsException | DiscordException e) {
-							e.printStackTrace();
-						}
-					}
-				}
-				return "";
-			}
-		});
-		commands.add(new Command("toggle") {
-			@Override
-			public String execute(String[] args, IMessage msg, Server server) {
-				if (!appliesForRole(server, msg.getAuthor(), Permission.Owner))
-					return "You don't have permissions to access this command";
 				if (args[0].toLowerCase().equals("osu")) {
 					main.osuListener ^= true;
 					return "OsuListener set to " + main.osuListener;

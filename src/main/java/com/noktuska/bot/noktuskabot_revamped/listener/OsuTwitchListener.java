@@ -1,5 +1,6 @@
 package com.noktuska.bot.noktuskabot_revamped.listener;
 
+import java.util.HashMap;
 import java.util.List;
 
 import com.noktuska.bot.noktuskabot_revamped.Main;
@@ -58,6 +59,8 @@ public class OsuTwitchListener implements Runnable {
 				
 				main.console.preciseLog("Fetching new pp and twitch data");
 				
+				HashMap<String, String> cache = new HashMap<>();
+				
 				for (Server elem : main.servers) {
 					List<OsuPlayer> osuPlayer = elem.osuPlayer;
 					List<TwitchStreamer> twitchStreamer = elem.streamer;
@@ -66,6 +69,13 @@ public class OsuTwitchListener implements Runnable {
 						if (main.osuListener) {
 							for (int i = 0; i < osuPlayer.size(); i++) {
 								OsuPlayer p = osuPlayer.get(i);
+								
+								if (cache.containsKey(p.getName().toLowerCase())) {
+									for (int j = 0; j < elem.channelIds.size(); j++) {
+										String msg = cache.get(p.getName().toLowerCase());
+										main.sendMessage(main.client.getChannelByID(elem.channelIds.get(j)), msg);
+									}
+								}
 								
 								for (int m = 0; m < 4; m++) {
 									OsuAPI userData = new OsuAPI("get_user", "u=" + p.getName() + "&m=" + m, main.console);
@@ -122,13 +132,29 @@ public class OsuTwitchListener implements Runnable {
 												if ((p.getPpBorder() != -1 && dpp >= p.getPpBorder()) || (dpp >= elem.ppBorder && p.getPpBorder() == -1)) {
 													main.console.log("Fetched data for " + p.getName());
 													
+													String sMode = "osu!";
+													switch (m) {
+													case 1:
+														sMode = "Taiko";
+														break;
+													case 2:
+														sMode = "Catch the Beat";
+														break;
+													case 3:
+														sMode = "Mania";
+														break;
+													}
+													
 													for (int j = 0; j < elem.channelIds.size(); j++) {
-														main.sendMessage(main.client.getChannelByID(elem.channelIds.get(j)), Func.listValues("Username", p.getName(),
+														String msg = Func.listValues("Username", p.getName(),
 																"Song", artist + " - " + title + " [" + version + "] (" + creator + ")",
 																"Difficulty", diff + "*",
 																"Mods", mods,
 																"Accuracy", acc + "%",
-																"PP", "" + newPP) + "\nDownload: <http://osu.ppy.sh/b/" + beatmapId + ">");
+																"PP", "" + newPP,
+																"Mode", sMode) + "\nDownload: <http://osu.ppy.sh/b/" + beatmapId + ">";
+														main.sendMessage(main.client.getChannelByID(elem.channelIds.get(j)), msg);
+														cache.put(p.getName().toLowerCase(), msg);
 													}
 												}
 											} catch (Exception e) {
